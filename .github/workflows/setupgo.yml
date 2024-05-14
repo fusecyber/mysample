@@ -36,4 +36,4 @@ jobs:
       #  GITHUB_TOKEN: ${{ github.token }}
 
     - name: Run TFLint
-      run: tflint -f compact -c --config $GITHUB_WORKSPACE/.tflint.hcl
+      run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
