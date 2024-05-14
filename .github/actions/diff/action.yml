@@ -4,6 +4,10 @@ inputs:
   subdir:
     required: true
 outputs:
+  diff-env:
+    value: ${{ steps.diff.outputs.diff-env }}
+  diff-dir:
+    value: ${{ steps.diff.outputs.diff-dir }}
   diff-count:
     value: ${{ steps.diff.outputs.diff-count }}
 runs:
