@@ -35,5 +35,17 @@ jobs:
       #env:
       #  GITHUB_TOKEN: ${{ github.token }}
 
+    - uses: ./.github/workflows/diff.yml
+      name: diff
+      id: diff
+      with:
+        subdir: terraform
+
     - name: Run TFLint
+      if: teps.diff.outputs.diff-count > 0
+      working-directory: ./terraform
       run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
+
+    - run: echo ${{ steps.tflint.outputs.stdout }}
+    - run: echo ${{ steps.tflint.outputs.stderr }}
+    - run: echo ${{ steps.tflint.outputs.exitcode }}
