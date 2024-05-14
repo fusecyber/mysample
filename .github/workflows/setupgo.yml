@@ -43,7 +43,7 @@ jobs:
 
     - name: Run TFLint
       if: steps.diff.outputs.diff-count > 0
-      working-directory: ./terraform
+      working-directory: ./terraform/${steps.diff.outputs.diff-env}/${steps.diff.outputs.diff-dir}
       run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
 
     - run: echo ${{ steps.tflint.outputs.stdout }}
