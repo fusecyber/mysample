@@ -35,7 +35,7 @@ jobs:
       #env:
       #  GITHUB_TOKEN: ${{ github.token }}
 
-    - uses: ./.github/workflows/actions/diff/action.yml
+    - uses: ./.github/actions/diff/action.yml
       name: diff
       id: diff
       with:
