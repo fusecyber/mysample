@@ -42,7 +42,7 @@ jobs:
         subdir: terraform
 
     - name: Run TFLint
-      if: teps.diff.outputs.diff-count > 0
+      if: steps.diff.outputs.diff-count > 0
       working-directory: ./terraform
       run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
 
