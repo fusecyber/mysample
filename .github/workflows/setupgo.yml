@@ -61,8 +61,8 @@ jobs:
 
       - name: Init TFLint
         run: tflint --init
-        #env:
-        #  GITHUB_TOKEN: ${{ github.token }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       #- uses: ./.github/actions/diff
       #  name: diff
@@ -71,10 +71,8 @@ jobs:
       #    subdir: terraform
 
       - name: Run TFLint
-        #if: steps.diff.outputs.diff-count > 0
-        #working-directory: ./terraform/${steps.diff.outputs.diff-env}/${steps.diff.outputs.diff-dir}
+        working-directory: ${{ matrix.target_dir }}
         run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
-
       - run: echo ${{ steps.tflint.outputs.stdout }}
       - run: echo ${{ steps.tflint.outputs.stderr }}
       - run: echo ${{ steps.tflint.outputs.exitcode }}
