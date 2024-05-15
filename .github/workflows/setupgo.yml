@@ -1,6 +1,7 @@
 name: lint
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - "**"
@@ -9,43 +10,66 @@ on:
       - synchronize
 
 jobs:
+  dir-identify:
+    outputs:
+      target_dir: ${{ steps.changes.outputs.target_dir }}
+    runs-on: ubuntu-latest:
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: dir-filter
+        with:
+          list-files: json
+          filters: |
+            changed: 'terraform*/**'
+      - id: changes
+          run: |
+            target_dir="$( echo ${changed} | jq -r '.[]' | cut -d'/' -f1 | sort | uniq | jq -s -R -c 'split("\n") | map(select(. != ""))' )"
+            echo "target_dir=${target_dir}" >> $GITHUB_OUTPUT
+
   tflint:
+    needs: dir-identify
+    if: needs.dir-identify.outputs.target_dir != '[]'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.dir-identify.outputs.projects) }}
 
     steps:
-    - uses: actions/checkout@v4
-      name: Checkout source code
+      - uses: actions/checkout@v4
+        name: Checkout source code
+      - run: echo "Building ${{ matrix.project }}"
 
-    - uses: actions/cache@v4
-      name: Cache plugin dir
+      - uses: actions/cache@v4
+        name: Cache plugin dir
       with:
         path: ~/.tflint.d/plugins
         key: tflint-${{ hashFiles('.tflint.hcl') }}
 
-    - uses: terraform-linters/setup-tflint@v4
-      name: Setup TFLint
-      with:
-        tflint_version: v0.50.3
+      - uses: terraform-linters/setup-tflint@v4
+        name: Setup TFLint
+        with:
+          tflint_version: v0.50.3
 
-    - name: Show version
-      run: tflint --version
+      - name: Show tflnt version
+        run: tflint --version
 
-    - name: Init TFLint
-      run: tflint --init
-      #env:
-      #  GITHUB_TOKEN: ${{ github.token }}
+      - name: Init TFLint
+        run: tflint --init
+        #env:
+        #  GITHUB_TOKEN: ${{ github.token }}
 
-    - uses: ./.github/actions/diff
-      name: diff
-      id: diff
-      with:
-        subdir: terraform
+      #- uses: ./.github/actions/diff
+      #  name: diff
+      #  id: diff
+      #  with:
+      #    subdir: terraform
 
-    - name: Run TFLint
-      if: steps.diff.outputs.diff-count > 0
-      working-directory: ./terraform/${steps.diff.outputs.diff-env}/${steps.diff.outputs.diff-dir}
-      run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
+      - name: Run TFLint
+        #if: steps.diff.outputs.diff-count > 0
+        #working-directory: ./terraform/${steps.diff.outputs.diff-env}/${steps.diff.outputs.diff-dir}
+        run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
 
-    - run: echo ${{ steps.tflint.outputs.stdout }}
-    - run: echo ${{ steps.tflint.outputs.stderr }}
-    - run: echo ${{ steps.tflint.outputs.exitcode }}
+      - run: echo ${{ steps.tflint.outputs.stdout }}
+      - run: echo ${{ steps.tflint.outputs.stderr }}
+      - run: echo ${{ steps.tflint.outputs.exitcode }}
