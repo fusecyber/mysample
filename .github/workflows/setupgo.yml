@@ -29,15 +29,8 @@ jobs:
         env:
           changed: ${{steps.dir-filter.outputs.changed_files}}
         run: |
-          #echo ${changed}
-          #target_dir="$( echo ${changed} | jq -r '.[]' | cut -d'/' -f1 | sort | uniq | jq -s -R -c 'split("\n") | map(select(. != ""))' )"
-          #echo $target_dir
-          #echo "target_dir=${target_dir}" >> $GITHUB_OUTPUT
-          echo "${changed} | jq -r '.[]'"
-        shell: bash
-      - name: debug
-        run: |
-          echo ${changed} | jq -r '.[]' | cut -d'/' -f1
+          target_dir="$( echo ${changed} | jq -r '.[]' | xargs dirname | sort | uniq | jq -s -R -c 'split("\n") | map(select(. != ""))')"
+          echo "target_dir=${target_dir}" >> $GITHUB_OUTPUT
         shell: bash
 
   tflint:
@@ -45,7 +38,7 @@ jobs:
     if: needs.dir-identify.outputs.target_dir != '[]'
     strategy:
       matrix:
-        target_dir: ${{ fromJSON(needs.dir-identify.outputs.projects) }}
+        target_dir: ${{ fromJSON(needs.dir-identify.outputs.target_dir) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
