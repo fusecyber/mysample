@@ -26,7 +26,7 @@ jobs:
         run: |
           echo ${changed}
           target_dir="$( echo ${changed} | jq -r '.[]' | cut -d'/' -f1 | sort | uniq | jq -s -R -c 'split("\n") | map(select(. != ""))' )"
-          echo target_dir
+          echo $target_dir
           echo "target_dir=${target_dir}" >> $GITHUB_OUTPUT
 
   tflint:
