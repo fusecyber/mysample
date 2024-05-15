@@ -13,7 +13,7 @@ jobs:
   dir-identify:
     outputs:
       target_dir: ${{ steps.changes.outputs.target_dir }}
-    runs-on: ubuntu-latest:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -23,28 +23,27 @@ jobs:
           filters: |
             changed: 'terraform*/**'
       - id: changes
-          run: |
-            target_dir="$( echo ${changed} | jq -r '.[]' | cut -d'/' -f1 | sort | uniq | jq -s -R -c 'split("\n") | map(select(. != ""))' )"
-            echo "target_dir=${target_dir}" >> $GITHUB_OUTPUT
+        run: |
+          target_dir="$( echo ${changed} | jq -r '.[]' | cut -d'/' -f1 | sort | uniq | jq -s -R -c 'split("\n") | map(select(. != ""))' )"
+           echo "target_dir=${target_dir}" >> $GITHUB_OUTPUT
 
   tflint:
     needs: dir-identify
     if: needs.dir-identify.outputs.target_dir != '[]'
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: ${{ fromJSON(needs.dir-identify.outputs.projects) }}
-
+        target_dir: ${{ fromJSON(needs.dir-identify.outputs.projects) }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         name: Checkout source code
-      - run: echo "Building ${{ matrix.project }}"
+      - run: echo "Building ${{ matrix.target_dir }}"
 
       - uses: actions/cache@v4
         name: Cache plugin dir
-      with:
-        path: ~/.tflint.d/plugins
-        key: tflint-${{ hashFiles('.tflint.hcl') }}
+        with:
+          path: ~/.tflint.d/plugins
+          key: tflint-${{ hashFiles('.tflint.hcl') }}
 
       - uses: terraform-linters/setup-tflint@v4
         name: Setup TFLint
