@@ -45,15 +45,21 @@ jobs:
         name: Checkout source code
       - run: echo "Building ${{ matrix.target_dir }}"
 
+      - name: github-action misspell
+        uses: reviewdog/action-misspell@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          locale: "US"
+
       - uses: actions/cache@v4
         name: Cache plugin dir
         with:
           path: ~/.tflint.d/plugins
           key: tflint-${{ hashFiles('.tflint.hcl') }}
 
-      - name: Install Terraform
-        run: |
-          brew install terraform
+      #- name: Install Terraform
+      #  run: |
+      #    brew install terraform
 
       - uses: terraform-linters/setup-tflint@v4
         name: Setup TFLint
