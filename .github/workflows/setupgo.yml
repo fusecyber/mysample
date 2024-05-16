@@ -17,6 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: checkout
+      - name: github-action misspell
+        uses: reviewdog/action-misspell@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          locale: "US"
       - uses: dorny/paths-filter@v3
         name: check-dir
         id: dir-filter
@@ -24,6 +29,11 @@ jobs:
           list-files: json
           filters: |
             changed: 'terraform*/**'
+      - uses: EPMatt/reviewdog-action-prettier@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: warning
       - name: detect-target-dir
         id: changes
         env:
@@ -45,11 +55,6 @@ jobs:
         name: Checkout source code
       - run: echo "Building ${{ matrix.target_dir }}"
 
-      - name: github-action misspell
-        uses: reviewdog/action-misspell@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          locale: "US"
 
       - uses: actions/cache@v4
         name: Cache plugin dir
