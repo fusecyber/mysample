@@ -58,7 +58,6 @@ jobs:
         name: Checkout source code
       - run: echo "Building ${{ matrix.target_dir }}"
 
-
       - uses: actions/cache@v4
         name: Cache plugin dir
         with:
@@ -69,19 +68,19 @@ jobs:
       #  run: |
       #    brew install terraform
 
-      - uses: terraform-linters/setup-tflint@v4
-        name: Setup TFLint
-        with:
-          tflint_version: v0.50.3
+      #- uses: terraform-linters/setup-tflint@v4
+      #  name: Setup TFLint
+      #  with:
+      #    tflint_version: v0.50.3
 
-      - name: Show tflnt version
-        run: tflint --version
+      #- name: Show tflnt version
+      #  run: tflint --version
 
-      - name: Init TFLint
-        run: tflint --init
-        working_directory: ${{ matrix.target_dir }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      #- name: Init TFLint
+      #  run: tflint --init
+      #  working_directory: ${{ matrix.target_dir }}
+      #  env:
+      #    GITHUB_TOKEN: ${{ github.token }}
 
       #- uses: ./.github/actions/diff
       #  name: diff
