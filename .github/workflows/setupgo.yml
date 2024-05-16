@@ -29,11 +29,11 @@ jobs:
           list-files: json
           filters: |
             changed: 'terraform*/**'
-      - uses: EPMatt/reviewdog-action-prettier@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-pr-review
-          level: warning
+      #- uses: EPMatt/reviewdog-action-prettier@v1
+      #  with:
+      #    github_token: ${{ secrets.github_token }}
+      #    reporter: github-pr-review
+      #    level: warning
       - name: detect-target-dir
         id: changes
         env:
