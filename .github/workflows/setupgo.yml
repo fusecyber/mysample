@@ -95,10 +95,10 @@ jobs:
       #- run: echo ${{ steps.tflint.outputs.stderr }}
       #- run: echo ${{ steps.tflint.outputs.exitcode }}
 
-      - name: Terraform init
-        working-directory: ${{ matrix.target_dir }}
-        run: |
-          terraform init
+      #- name: Terraform init
+      #  working-directory: ${{ matrix.target_dir }}
+      #  run: |
+      #    terraform init
 
       - name: tflint
         uses: reviewdog/action-tflint@v1
