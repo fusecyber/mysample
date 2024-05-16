@@ -104,7 +104,7 @@ jobs:
         uses: reviewdog/action-tflint@v1
         with:
           github_token: ${{ secrets.github_token }}
-          tflint_config: "$GITHUB_WORKSPACE/.tflint.hcl"
+          tflint_config: "${{ github.workspace }}/.tflint.hcl"
           working_directory: ${{ matrix.target_dir }}
           reporter: github-pr-review
           fail_on_error: "true"
