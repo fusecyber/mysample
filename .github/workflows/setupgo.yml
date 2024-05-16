@@ -103,7 +103,6 @@ jobs:
 
       - name: tflint
         uses: reviewdog/action-tflint@v1
-        working_directory: ${{ matrix.target_dir }}
         with:
           github_token: ${{ secrets.github_token }}
           tflint_config: "${{ github.workspace }}/.tflint.hcl"
