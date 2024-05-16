@@ -51,6 +51,10 @@ jobs:
           path: ~/.tflint.d/plugins
           key: tflint-${{ hashFiles('.tflint.hcl') }}
 
+      - name: Install Terraform
+        run: |
+          brew install terraform
+
       - uses: terraform-linters/setup-tflint@v4
         name: Setup TFLint
         with:
@@ -70,9 +74,27 @@ jobs:
       #  with:
       #    subdir: terraform
 
-      - name: Run TFLint
+      #- name: Run TFLint
+      #  working-directory: ${{ matrix.target_dir }}
+      #  run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
+      #- run: echo ${{ steps.tflint.outputs.stdout }}
+      #- run: echo ${{ steps.tflint.outputs.stderr }}
+      #- run: echo ${{ steps.tflint.outputs.exitcode }}
+
+      - name: Terraform init
         working-directory: ${{ matrix.target_dir }}
-        run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
+        run: |
+          terraform init
+
+      - name: tflint
+        uses: reviewdog/action-tflint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          tflint_config: $GITHUB_WORKSPACE/.tflint.hcl
+          working_directory: ${{ matrix.target_dir }}
+          reporter: github-pr-review
+          fail_on_error: "true"
+          filter_mode: "nofilter"
       - run: echo ${{ steps.tflint.outputs.stdout }}
       - run: echo ${{ steps.tflint.outputs.stderr }}
       - run: echo ${{ steps.tflint.outputs.exitcode }}
