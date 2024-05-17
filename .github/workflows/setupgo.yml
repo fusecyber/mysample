@@ -75,6 +75,7 @@ jobs:
       - name: Terraform Init
         id: terraform-init
         run: terraform init
+        working-directory: ${{ matrix.target_dir }}
 
       - name: Terraform Validate
         id: terraform-validate
