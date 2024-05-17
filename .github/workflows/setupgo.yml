@@ -54,10 +54,6 @@ jobs:
       matrix:
         target_dir: ${{ fromJSON(needs.dir-identify.outputs.target_dir) }}
     runs-on: ubuntu-latest
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_RGION: "ap-northeast-1"
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
