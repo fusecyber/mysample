@@ -12,6 +12,9 @@ on:
       - opened
       - synchronize
 
+env:
+  TF_VERSION: 1.5.0
+
 jobs:
   dir-identify:
     outputs:
@@ -100,6 +103,27 @@ jobs:
       #  run: |
       #    terraform init
 
+     - name: Install Terraform
+       uses: hashicorp/setup-terraform@v3
+       with:
+         terraform_version: ${env.TF_VERSION}
+
+      - name: Terraform fmt
+        id: terraform-fmt
+        working_directory: ${{ matrix.target_dir }}
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: terraform-init
+        working_directory: ${{ matrix.target_dir }}
+        run: terraform init
+
+      - name: Terraform Validate
+        id: terraform-validate
+        working_directory: ${{ matrix.target_dir }}
+        run: terraform validate -no-color
+
       - name: tflint
         uses: reviewdog/action-tflint@v1
         with:
@@ -112,6 +136,17 @@ jobs:
           fail_on_error: "true"
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.github_token }}
-      - run: echo ${{ steps.tflint.outputs.stdout }}
-      - run: echo ${{ steps.tflint.outputs.stderr }}
-      - run: echo ${{ steps.tflint.outputs.exitcode }}
+
+      - name: Terraform plan
+        id: terraform_plan
+        working_directory: ${{ matrix.target_dir }}
+        continue-on-error: true
+        run: |
+          terraform plan \
+            -input=false \
+            -no-color \
+            #-var 'db_password=${{ secrets.DB_PASSWORD }}' \
+            #-var 'cloudflare_account_id=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}' \
+            #-var 'cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+            #-var 'user_api_session_secret=${{ secrets.USER_API_SESSION_SECRET }}' \
+            #-detailed-exitcode
