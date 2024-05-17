@@ -75,12 +75,10 @@ jobs:
         #working_directory: ${{ matrix.target_dir }}
 
       - name: Terraform Init
-        working_directory: ${{ matrix.target_dir }}
         id: terraform-init
         run: terraform init
 
       - name: Terraform Validate
-        working_directory: ${{ matrix.target_dir }}
         id: terraform-validate
         run: terraform validate -no-color
 
@@ -98,7 +96,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.github_token }}
 
       - name: Terraform plan
-        working_directory: ${{ matrix.target_dir }}
+        #working_directory: ${{ matrix.target_dir }}
         id: terraform_plan
         continue-on-error: true
         run: |
