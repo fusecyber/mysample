@@ -68,20 +68,21 @@ jobs:
           terraform_version: ${env.TF_VERSION}
 
       - name: Terraform fmt
+        working-directory: ${{ matrix.target_dir }}
         id: terraform-fmt
         continue-on-error: true
         run: terraform fmt -check
-        working_directory: ${{ matrix.target_dir }}
+        #working_directory: ${{ matrix.target_dir }}
 
       - name: Terraform Init
+        working_directory: ${{ matrix.target_dir }}
         id: terraform-init
         run: terraform init
-        working_directory: ${{ matrix.target_dir }}
 
       - name: Terraform Validate
+        working_directory: ${{ matrix.target_dir }}
         id: terraform-validate
         run: terraform validate -no-color
-        working_directory: ${{ matrix.target_dir }}
 
       - name: tflint
         uses: reviewdog/action-tflint@v1
@@ -97,6 +98,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.github_token }}
 
       - name: Terraform plan
+        working_directory: ${{ matrix.target_dir }}
         id: terraform_plan
         continue-on-error: true
         run: |
@@ -108,4 +110,3 @@ jobs:
             #-var 'cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}' \
             #-var 'user_api_session_secret=${{ secrets.USER_API_SESSION_SECRET }}' \
             #-detailed-exitcode
-        working-directory: ${{ matrix.target_dir }}
