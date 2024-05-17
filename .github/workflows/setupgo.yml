@@ -116,9 +116,9 @@ jobs:
             -input=false \
             -no-color \
         working-directory: ${{ matrix.target_dir }}
-      - run: echo ${{ steps.terraform_plan.outputs.stdout }}
-      - run: echo ${{ steps.terraform_plan.outputs.stderr }}
-      - run: echo ${{ steps.terraform_plan.outputs.exitcode }}
+      #- run: echo ${{ steps.terraform_plan.outputs.stdout }}
+      #- run: echo ${{ steps.terraform_plan.outputs.stderr }}
+      #- run: echo ${{ steps.terraform_plan.outputs.exitcode }}
 
       - name: output github
         uses: actions/github-script@v7
