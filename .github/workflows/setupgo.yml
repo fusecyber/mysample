@@ -70,9 +70,7 @@ jobs:
       - name: Terraform fmt
         working-directory: ${{ matrix.target_dir }}
         id: terraform-fmt
-        continue-on-error: true
         run: terraform fmt -check
-        #working_directory: ${{ matrix.target_dir }}
 
       - name: Terraform Init
         id: terraform-init
@@ -96,7 +94,6 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.github_token }}
 
       - name: Terraform plan
-        #working_directory: ${{ matrix.target_dir }}
         id: terraform_plan
         continue-on-error: true
         run: |
