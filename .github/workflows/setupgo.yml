@@ -51,6 +51,7 @@ jobs:
       matrix:
         target_dir: ${{ fromJSON(needs.dir-identify.outputs.target_dir) }}
     runs-on: ubuntu-latest
+    working-directory: ${{ matrix.target_dir }}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -68,12 +69,10 @@ jobs:
           terraform_version: ${env.TF_VERSION}
 
       - name: Terraform fmt
-        working-directory: ${{ matrix.target_dir }}
         id: terraform-fmt
         run: terraform fmt -check
 
       - name: Terraform Init
-        working_directory: ${{ matrix.target_dir }}
         id: terraform-init
         run: terraform init
 
@@ -97,7 +96,6 @@ jobs:
 
       - name: Terraform plan
         id: terraform_plan
-        working_directory: ${{ matrix.target_dir }}
         run: |
           terraform plan \
             -input=false \
