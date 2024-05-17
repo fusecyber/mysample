@@ -13,7 +13,7 @@ plugin "terraform" {
 }
 
 config {
-  module = true
+  #module = true
 }
 
 # terraform Rules

@@ -106,3 +106,4 @@ jobs:
             #-var 'cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}' \
             #-var 'user_api_session_secret=${{ secrets.USER_API_SESSION_SECRET }}' \
             #-detailed-exitcode
+        working-directory: ${{ matrix.target_dir }}
