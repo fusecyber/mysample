@@ -98,7 +98,7 @@ jobs:
 
       - name: Terraform plan
         id: terraform_plan
-        working_directory: ${{ matrix.target_dir }}
+        working-directory: ${{ matrix.target_dir }}
         continue-on-error: true
         run: |
           terraform plan \
