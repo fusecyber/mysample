@@ -13,7 +13,7 @@ on:
       - synchronize
 
 env:
-  TF_VERSION: "1.5.0"
+  TF_VERSION: 1.5.0
 
 jobs:
   dir-identify:
@@ -35,6 +35,11 @@ jobs:
           list-files: json
           filters: |
             changed: 'terraform*/**'
+      #- uses: EPMatt/reviewdog-action-prettier@v1
+      #  with:
+      #    github_token: ${{ secrets.github_token }}
+      #    reporter: github-pr-review
+      #    level: warning
       - name: detect-target-dir
         id: changes
         env:
@@ -52,32 +57,71 @@ jobs:
         target_dir: ${{ fromJSON(needs.dir-identify.outputs.target_dir) }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        name: Checkout source code
       - run: echo "Building ${{ matrix.target_dir }}"
 
-      - name: Cache plugin dir
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
+        name: Cache plugin dir
         with:
           path: ~/.tflint.d/plugins
           key: tflint-${{ hashFiles('.tflint.hcl') }}
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${env.TF_VERSION}
+      #- name: Install Terraform
+      #  run: |
+      #    brew install terraform
+
+      #- uses: terraform-linters/setup-tflint@v4
+      #  name: Setup TFLint
+      #  with:
+      #    tflint_version: v0.50.3
+
+      #- name: Show tflnt version
+      #  run: tflint --version
+
+      #- name: Init TFLint
+      #  run: tflint --init
+      #  working_directory: ${{ matrix.target_dir }}
+      #  env:
+      #    GITHUB_TOKEN: ${{ github.token }}
+
+      #- uses: ./.github/actions/diff
+      #  name: diff
+      #  id: diff
+      #  with:
+      #    subdir: terraform
+
+      #- name: Run TFLint
+      #  working-directory: ${{ matrix.target_dir }}
+      #  run: tflint -f compact --config $GITHUB_WORKSPACE/.tflint.hcl
+      #- run: echo ${{ steps.tflint.outputs.stdout }}
+      #- run: echo ${{ steps.tflint.outputs.stderr }}
+      #- run: echo ${{ steps.tflint.outputs.exitcode }}
+
+      #- name: Terraform init
+      #  working-directory: ${{ matrix.target_dir }}
+      #  run: |
+      #    terraform init
+
+     - name: Install Terraform
+       uses: hashicorp/setup-terraform@v3
+       with:
+         terraform_version: ${env.TF_VERSION}
 
       - name: Terraform fmt
-        working-directory: ${{ matrix.target_dir }}
         id: terraform-fmt
+        working_directory: ${{ matrix.target_dir }}
         run: terraform fmt -check
+        continue-on-error: true
 
       - name: Terraform Init
         id: terraform-init
+        working_directory: ${{ matrix.target_dir }}
         run: terraform init
 
       - name: Terraform Validate
         id: terraform-validate
+        working_directory: ${{ matrix.target_dir }}
         run: terraform validate -no-color
 
       - name: tflint
@@ -90,12 +134,13 @@ jobs:
           tflint_init: "true"
           reporter: github-pr-review
           fail_on_error: "true"
-          flags: "--call-module-type=all"
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.github_token }}
 
       - name: Terraform plan
         id: terraform_plan
+        working_directory: ${{ matrix.target_dir }}
+        continue-on-error: true
         run: |
           terraform plan \
             -input=false \

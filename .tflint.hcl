@@ -12,6 +12,10 @@ plugin "terraform" {
     source  = "github.com/terraform-linters/tflint-ruleset-terraform"
 }
 
+config {
+  module = true
+}
+
 # terraform Rules
 # @see https://github.com/terraform-linters/tflint-ruleset-terraform/blob/main/docs/rules/README.md
 rule "terraform_naming_convention" {
