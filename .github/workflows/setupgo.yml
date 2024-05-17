@@ -16,6 +16,8 @@ on:
 
 env:
   TF_VERSION: "1.5.0"
+
+secrets:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_DEFAULT_RGION: "ap-northeast-1"
@@ -105,7 +107,6 @@ jobs:
         run: |
           echo "KEY"
           echo "AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}"
-          echo ${env.AWS_ACCESS_KEY_ID}
 
       - name: credentials
         uses: aws-actions/configure-aws-credentials@v1
