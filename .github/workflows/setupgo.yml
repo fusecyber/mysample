@@ -1,0 +1,170 @@
+name: lint
+
+permissions:
+  pull-requests: write
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "**"
+    types:
+      - opened
+      - synchronize
+
+env:
+  TF_VERSION: "1.5.0"
+
+jobs:
+  dir-identify:
+    outputs:
+      target_dir: ${{ steps.changes.outputs.target_dir }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: checkout
+      - name: github-action misspell
+        uses: reviewdog/action-misspell@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          locale: "US"
+      - uses: dorny/paths-filter@v3
+        name: check-dir
+        id: dir-filter
+        with:
+          list-files: json
+          filters: |
+            changed: 'terraform*/**'
+      - name: detect-target-dir
+        id: changes
+        env:
+          changed: ${{steps.dir-filter.outputs.changed_files}}
+        run: |
+          target_dir="$( echo ${changed} | jq -r '.[]' | xargs dirname | sort | uniq | jq -s -R -c 'split("\n") | map(select(. != ""))')"
+          echo "target_dir=${target_dir}" >> $GITHUB_OUTPUT
+        shell: bash
+
+  tflint:
+    needs: dir-identify
+    if: needs.dir-identify.outputs.target_dir != '[]'
+    strategy:
+      matrix:
+        target_dir: ${{ fromJSON(needs.dir-identify.outputs.target_dir) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      - run: echo "Building ${{ matrix.target_dir }}"
+
+      - name: Cache plugin dir
+        uses: actions/cache@v4
+        with:
+          path: ~/.tflint.d/plugins
+          key: tflint-${{ hashFiles('.tflint.hcl') }}
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${env.TF_VERSION}
+
+      - name: Terraform fmt
+        id: terraform-fmt
+        run: terraform fmt -check
+        working-directory: ${{ matrix.target_dir }}
+
+      - name: Terraform Init
+        id: terraform-init
+        run: terraform init
+        working-directory: ${{ matrix.target_dir }}
+
+      - name: Terraform Validate
+        id: terraform-validate
+        run: terraform validate -no-color
+
+      - name: tflint
+        uses: reviewdog/action-tflint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          tflint_config: "${{ github.workspace }}/.tflint.hcl"
+          working_directory: ${{ matrix.target_dir }}
+          level: "waring"
+          tflint_init: "true"
+          reporter: github-pr-review
+          fail_on_error: "true"
+          flags: "--call-module-type=all"
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.github_token }}
+
+      - name: Debug AWS Credentials
+        continue-on-error: true
+        run: |
+          echo "KEY"
+          echo "AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}"
+
+      - name: credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: "arn:aws:iam::674961479313:role/github_action_role"
+          aws-region: "ap-northeast-1"
+
+      - name: Terraform plan
+        id: terraform_plan
+        run: |
+          terraform plan \
+            -input=false \
+            -no-color \
+        working-directory: ${{ matrix.target_dir }}
+      #- run: echo ${{ steps.terraform_plan.outputs.stdout }}
+      #- run: echo ${{ steps.terraform_plan.outputs.stderr }}
+      #- run: echo ${{ steps.terraform_plan.outputs.exitcode }}
+
+      - name: output github
+        uses: actions/github-script@v7
+        env:
+          PLAN: "terraform\n${{ steps.terraform_plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
+
+            \`\`\`\n
+            ${{ steps.validate.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Run tfsec with reviewdog output on the PR
+        uses: reviewdog/action-tfsec@master
+        with:
+          github_token: ${{ secrets.github_token }}
+          working-directory: ${{ matrix.target_dir }}
+          level: info
+          reporter: github-pr-review
+          filter_mode: nofilter
+          fail_on_error: true
+          flags: -tee
+          tfsec_flags: ""
