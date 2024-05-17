@@ -108,7 +108,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: "arn:aws:iam::674961479313:role/github_action_role"
-          aws-region: us-east-1
+          aws-region: ap-northeast-1
 
       - name: Terraform plan
         id: terraform_plan
