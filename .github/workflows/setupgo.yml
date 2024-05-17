@@ -107,12 +107,8 @@ jobs:
       - name: credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-region: "ap-northeast-1"
-          managed-session-policies: |
-            arn:aws:iam::aws:policy/job-function/ViewOnlyAccess
-          #aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          #aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          #aws-region: "ap-northeast-1"
+          role-to-assume: "arn:aws:iam::674961479313:role/github_action_role"
+          aws-region: us-east-1
 
       - name: Terraform plan
         id: terraform_plan
