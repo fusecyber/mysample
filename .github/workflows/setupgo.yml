@@ -71,7 +71,7 @@ jobs:
         id: terraform-fmt
         continue-on-error: true
         run: terraform fmt -check
-          working_directory: ${{ matrix.target_dir }}
+        working_directory: ${{ matrix.target_dir }}
 
       - name: Terraform Init
         id: terraform-init
