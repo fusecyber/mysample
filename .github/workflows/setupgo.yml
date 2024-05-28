@@ -1,0 +1,34 @@
+name: lint
+
+permissions:
+  pull-requests: write
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "**"
+    types:
+      - opened
+      - synchronize
+
+env:
+  TF_VERSION: "1.5.0"
+
+jobs:
+  dev_batch_github_actions:
+    runs-on: buntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: "arn:aws:iam::674961479313:role/github_action_role"
+          aws-region: "ap-northeast-1"
+      - name: batch queue
+        continue-on-error: true
+        run: |
+          aws s3 ls
+          aws batch describe-job-definitions
