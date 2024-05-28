@@ -1,0 +1,24 @@
+name: dev_batch_run
+
+on: workflow_dispatch
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  dev_batch_github_actions:
+    runs-on: buntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: "arn:aws:iam::674961479313:role/github_action_role"
+          aws-region: "ap-northeast-1"
+      - name: batch queue
+        continue-on-error: true
+        run: |
+          ls -ltr
+          aws s3 ls
+          aws batch describe-job-definitions
